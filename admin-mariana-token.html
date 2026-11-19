@@ -401,9 +401,6 @@ tr:last-child td { border-bottom: 0; }
 
   let client = null;
   let currentToken = null;
-
-  // PAINEL TEMPORARIAMENTE ZERADO
-  // Os registros do Supabase não são apagados.
   let guests = [];
 
   function status(value) {
@@ -417,7 +414,6 @@ tr:last-child td { border-bottom: 0; }
     }
 
     return { label: 'Pendente', cls: 'pending', key: 'pending' };
-
   }
 
   function escapeHtml(value) {
@@ -442,7 +438,6 @@ tr:last-child td { border-bottom: 0; }
       dateStyle: 'short',
       timeStyle: 'short'
     });
-
   }
 
   function showLoginMessage(message, type = 'error') {
@@ -450,7 +445,6 @@ tr:last-child td { border-bottom: 0; }
     const element = $('loginMessage');
     element.textContent = message;
     element.className = 'message ' + type;
-
   }
 
   function hideLoginMessage() {
@@ -458,32 +452,87 @@ tr:last-child td { border-bottom: 0; }
     const element = $('loginMessage');
     element.textContent = '';
     element.className = 'message';
-
   }
 
+  // Calcula os indicadores com os dados reais do Supabase.
   function updateCounters() {
 
-    $('totalCount').textContent = 0;
-    $('yesCount').textContent = 0;
-    $('noCount').textContent = 0;
-    $('pendingCount').textContent = 0;
+    $('totalCount').textContent = guests.length;
 
+    $('yesCount').textContent =
+      guests.filter(g => g.response === true).length;
+
+    $('noCount').textContent =
+      guests.filter(g => g.response === false).length;
+
+    $('pendingCount').textContent =
+      guests.filter(g => g.response == null).length;
   }
 
+  // Mostra os convidados e aplica os filtros.
   function render() {
 
-    $('guestRows').innerHTML = `
-      <tr>
-        <td colspan="4" class="empty">
-          Nenhum convidado cadastrado.
-        </td>
-      </tr>
-    `;
+    const search = $('searchInput').value
+      .trim()
+      .toLowerCase();
 
-    $('resultCount').textContent = 'Exibindo 0 de 0 convidados.';
+    const selectedStatus = $('statusFilter').value;
 
+    const filtered = guests.filter(guest => {
+
+      const guestName = String(guest.guest_name ?? '').toLowerCase();
+      const familyName = String(guest.family_name ?? '').toLowerCase();
+
+      const matchesSearch =
+        guestName.includes(search) ||
+        familyName.includes(search);
+
+      const matchesStatus =
+        selectedStatus === 'all' ||
+        status(guest.response).key === selectedStatus;
+
+      return matchesSearch && matchesStatus;
+    });
+
+    if (filtered.length === 0) {
+
+      $('guestRows').innerHTML = `
+        <tr>
+          <td colspan="4" class="empty">
+            ${guests.length === 0
+              ? 'Nenhum convidado cadastrado.'
+              : 'Nenhum convidado encontrado.'}
+          </td>
+        </tr>
+      `;
+
+    } else {
+
+      $('guestRows').innerHTML = filtered.map(guest => {
+
+        const responseStatus = status(guest.response);
+
+        return `
+          <tr>
+            <td>${escapeHtml(guest.family_name)}</td>
+            <td>${escapeHtml(guest.guest_name)}</td>
+            <td>
+              <span class="pill ${responseStatus.cls}">
+                ${responseStatus.label}
+              </span>
+            </td>
+            <td>${escapeHtml(formatDate(guest.responded_at))}</td>
+          </tr>
+        `;
+
+      }).join('');
+    }
+
+    $('resultCount').textContent =
+      `Exibindo ${filtered.length} de ${guests.length} convidados.`;
   }
 
+  // Busca os dados e verifica o token pela resposta da função SQL.
   async function fetchGuests(token) {
 
     const { data, error } = await client.rpc(
@@ -493,14 +542,30 @@ tr:last-child td { border-bottom: 0; }
 
     if (error) throw error;
 
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) return [];
 
+    // A função SQL retorna uma linha com guest_id nulo
+    // quando o token é válido, mas não existem convidados.
+    // Essa linha serve apenas para validar o token.
+    return data;
+  }
+
+  function isValidTokenResponse(data) {
+    return data.length > 0;
+  }
+
+  // Remove a linha vazia e mantém somente convidados reais.
+  function getRealGuests(data) {
+
+    return data.filter(guest =>
+      guest.guest_id !== null &&
+      guest.guest_id !== undefined
+    );
   }
 
   async function login(event) {
 
     event.preventDefault();
-
     hideLoginMessage();
 
     const token = $('tokenInput').value.trim();
@@ -519,22 +584,20 @@ tr:last-child td { border-bottom: 0; }
 
       const data = await fetchGuests(token);
 
-      // A função do Supabase retorna uma linha vazia
-      // quando o token é válido e não há convidados.
-      if (data.length === 0) {
+      if (!isValidTokenResponse(data)) {
 
         showLoginMessage(
           'Token inválido. Confira o código e tente novamente.'
         );
 
         return;
-
       }
 
       currentToken = token;
 
-      // Mantém o painel zerado temporariamente.
-      guests = [];
+      // Ignora somente a linha técnica vazia.
+      // Os convidados reais continuam sendo carregados.
+      guests = getRealGuests(data);
 
       updateCounters();
       render();
@@ -557,9 +620,7 @@ tr:last-child td { border-bottom: 0; }
 
       button.disabled = false;
       button.textContent = 'Entrar no painel';
-
     }
-
   }
 
   async function refresh() {
@@ -575,7 +636,7 @@ tr:last-child td { border-bottom: 0; }
 
       const data = await fetchGuests(currentToken);
 
-      if (data.length === 0) {
+      if (!isValidTokenResponse(data)) {
 
         logout();
 
@@ -584,11 +645,10 @@ tr:last-child td { border-bottom: 0; }
         );
 
         return;
-
       }
 
-      // Continua mantendo todos os indicadores zerados.
-      guests = [];
+      // Atualiza a lista com os dados atuais do banco.
+      guests = getRealGuests(data);
 
       updateCounters();
       render();
@@ -609,15 +669,16 @@ tr:last-child td { border-bottom: 0; }
 
       button.disabled = false;
       button.textContent = 'Atualizar dados';
-
     }
-
   }
 
   function logout() {
 
     currentToken = null;
     guests = [];
+
+    updateCounters();
+    render();
 
     $('dashboard').classList.add('hidden');
     $('loginScreen').classList.remove('hidden');
@@ -627,7 +688,6 @@ tr:last-child td { border-bottom: 0; }
     $('statusFilter').value = 'all';
 
     hideLoginMessage();
-
   }
 
   try {
@@ -650,7 +710,6 @@ tr:last-child td { border-bottom: 0; }
     );
 
     $('loginButton').disabled = true;
-
   }
 
   $('loginForm').addEventListener('submit', login);
