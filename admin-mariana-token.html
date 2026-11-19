@@ -367,7 +367,7 @@ tr:last-child td { border-bottom: 0; }
         <tbody id="guestRows">
           <tr>
             <td colspan="4" class="empty">
-              Carregando convidados...
+              Nenhum convidado cadastrado.
             </td>
           </tr>
         </tbody>
@@ -401,41 +401,33 @@ tr:last-child td { border-bottom: 0; }
 
   let client = null;
   let currentToken = null;
+
+  // PAINEL TEMPORARIAMENTE ZERADO
+  // Os registros do Supabase não são apagados.
   let guests = [];
 
-  const escapeHtml = value =>
-    String(value ?? '').replace(/[&<>"']/g, character => ({
+  function status(value) {
+
+    if (value === true) {
+      return { label: 'Confirmado', cls: 'yes', key: 'yes' };
+    }
+
+    if (value === false) {
+      return { label: 'Não poderá ir', cls: 'no', key: 'no' };
+    }
+
+    return { label: 'Pendente', cls: 'pending', key: 'pending' };
+
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
       "'": '&#39;'
     }[character]));
-
-  function status(value) {
-
-    if (value === true) {
-      return {
-        label: 'Confirmado',
-        cls: 'yes',
-        key: 'yes'
-      };
-    }
-
-    if (value === false) {
-      return {
-        label: 'Não poderá ir',
-        cls: 'no',
-        key: 'no'
-      };
-    }
-
-    return {
-      label: 'Pendente',
-      cls: 'pending',
-      key: 'pending'
-    };
-
   }
 
   function formatDate(value) {
@@ -456,7 +448,6 @@ tr:last-child td { border-bottom: 0; }
   function showLoginMessage(message, type = 'error') {
 
     const element = $('loginMessage');
-
     element.textContent = message;
     element.className = 'message ' + type;
 
@@ -465,75 +456,31 @@ tr:last-child td { border-bottom: 0; }
   function hideLoginMessage() {
 
     const element = $('loginMessage');
-
     element.textContent = '';
     element.className = 'message';
 
   }
 
-  function render() {
+  function updateCounters() {
 
-    const term = $('searchInput').value
-      .trim()
-      .toLocaleLowerCase('pt-BR');
-
-    const filter = $('statusFilter').value;
-
-    const rows = guests.filter(guest => {
-
-      const name = (
-        `${guest.guest_name || ''} ${guest.family_name || ''}`
-      ).toLocaleLowerCase('pt-BR');
-
-      return name.includes(term) &&
-        (filter === 'all' || status(guest.response).key === filter);
-
-    });
-
-    $('guestRows').innerHTML = rows.length
-      ? rows.map(guest => {
-
-          const result = status(guest.response);
-
-          return `
-            <tr>
-              <td>${escapeHtml(guest.family_name)}</td>
-              <td>${escapeHtml(guest.guest_name)}</td>
-              <td>
-                <span class="pill ${result.cls}">
-                  ${result.label}
-                </span>
-              </td>
-              <td>${formatDate(guest.responded_at)}</td>
-            </tr>
-          `;
-
-        }).join('')
-      : `
-        <tr>
-          <td colspan="4" class="empty">
-            Nenhum convidado encontrado.
-          </td>
-        </tr>
-      `;
-
-    $('resultCount').textContent =
-      `Exibindo ${rows.length} de ${guests.length} convidados.`;
+    $('totalCount').textContent = 0;
+    $('yesCount').textContent = 0;
+    $('noCount').textContent = 0;
+    $('pendingCount').textContent = 0;
 
   }
 
-  function updateCounters() {
+  function render() {
 
-    $('totalCount').textContent = guests.length;
+    $('guestRows').innerHTML = `
+      <tr>
+        <td colspan="4" class="empty">
+          Nenhum convidado cadastrado.
+        </td>
+      </tr>
+    `;
 
-    $('yesCount').textContent =
-      guests.filter(g => g.response === true).length;
-
-    $('noCount').textContent =
-      guests.filter(g => g.response === false).length;
-
-    $('pendingCount').textContent =
-      guests.filter(g => g.response === null).length;
+    $('resultCount').textContent = 'Exibindo 0 de 0 convidados.';
 
   }
 
@@ -572,7 +519,8 @@ tr:last-child td { border-bottom: 0; }
 
       const data = await fetchGuests(token);
 
-      // Nenhuma linha significa token inválido.
+      // A função do Supabase retorna uma linha vazia
+      // quando o token é válido e não há convidados.
       if (data.length === 0) {
 
         showLoginMessage(
@@ -583,11 +531,10 @@ tr:last-child td { border-bottom: 0; }
 
       }
 
-      // A função pode retornar uma linha vazia
-      // quando o token é válido e não existem convidados.
       currentToken = token;
 
-      guests = data.filter(guest => guest.guest_id !== null);
+      // Mantém o painel zerado temporariamente.
+      guests = [];
 
       updateCounters();
       render();
@@ -640,7 +587,8 @@ tr:last-child td { border-bottom: 0; }
 
       }
 
-      guests = data.filter(guest => guest.guest_id !== null);
+      // Continua mantendo todos os indicadores zerados.
+      guests = [];
 
       updateCounters();
       render();
@@ -675,7 +623,6 @@ tr:last-child td { border-bottom: 0; }
     $('loginScreen').classList.remove('hidden');
 
     $('tokenInput').value = '';
-
     $('searchInput').value = '';
     $('statusFilter').value = 'all';
 
@@ -709,6 +656,7 @@ tr:last-child td { border-bottom: 0; }
   $('loginForm').addEventListener('submit', login);
   $('refreshBtn').addEventListener('click', refresh);
   $('logoutBtn').addEventListener('click', logout);
+
   $('searchInput').addEventListener('input', render);
   $('statusFilter').addEventListener('change', render);
 
