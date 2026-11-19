@@ -17,9 +17,7 @@
   --muted: #718078;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -69,23 +67,19 @@ h2 {
   box-shadow: 0 8px 28px #20382a0b;
 }
 
-.panel {
-  padding: 22px;
-}
+.panel { padding: 22px; }
 
 .login-wrap {
   max-width: 430px;
   margin: 55px auto;
 }
 
-.login-wrap h2 {
+.login-wrap h2,
+.login-wrap .sub {
   text-align: center;
 }
 
-.login-wrap .sub {
-  text-align: center;
-  margin-bottom: 25px;
-}
+.login-wrap .sub { margin-bottom: 25px; }
 
 .login-icon {
   text-align: center;
@@ -151,9 +145,7 @@ button:disabled {
   color: #27613c;
 }
 
-.hidden {
-  display: none !important;
-}
+.hidden { display: none !important; }
 
 .stats {
   display: grid;
@@ -162,9 +154,7 @@ button:disabled {
   margin: 20px 0;
 }
 
-.stat {
-  padding: 17px;
-}
+.stat { padding: 17px; }
 
 .stat span {
   font-size: 13px;
@@ -212,9 +202,7 @@ th {
   text-transform: uppercase;
 }
 
-tr:last-child td {
-  border-bottom: 0;
-}
+tr:last-child td { border-bottom: 0; }
 
 .pill {
   display: inline-block;
@@ -254,17 +242,9 @@ tr:last-child td {
 }
 
 @media(max-width: 700px) {
-  .stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .filters {
-    grid-template-columns: 1fr;
-  }
-
-  main {
-    margin-top: 20px;
-  }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .filters { grid-template-columns: 1fr; }
+  main { margin-top: 20px; }
 }
 </style>
 </head>
@@ -278,135 +258,133 @@ tr:last-child td {
 
 <main>
 
-  <!-- TELA DE ENTRADA -->
-  <section id="loginScreen" class="panel login-wrap">
+<section id="loginScreen" class="panel login-wrap">
 
-    <div class="login-icon">🔐</div>
+  <div class="login-icon">🔐</div>
 
-    <h2>Acesso dos responsáveis</h2>
+  <h2>Acesso dos responsáveis</h2>
 
-    <p class="sub">
-      Digite o token privado para consultar as confirmações dos convidados.
-    </p>
+  <p class="sub">
+    Digite o token privado para consultar as confirmações dos convidados.
+  </p>
 
-    <form id="loginForm">
+  <form id="loginForm">
 
-      <label for="tokenInput">Token de acesso</label>
+    <label for="tokenInput">Token de acesso</label>
+
+    <input
+      id="tokenInput"
+      type="password"
+      placeholder="Digite seu token"
+      autocomplete="off"
+      required
+    >
+
+    <button id="loginButton" class="login-button" type="submit">
+      Entrar no painel
+    </button>
+
+  </form>
+
+  <div id="loginMessage" class="message"></div>
+
+</section>
+
+<section id="dashboard" class="hidden">
+
+  <div class="top-actions">
+
+    <div>
+      <h2>Confirmações dos convidados</h2>
+      <p class="sub">
+        Acompanhamento geral das famílias e de cada convidado.
+      </p>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="refreshBtn">Atualizar dados</button>
+      <button id="logoutBtn" type="button">Sair</button>
+    </div>
+
+  </div>
+
+  <div class="stats">
+
+    <div class="stat">
+      <span>Total de convidados</span>
+      <strong id="totalCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Confirmados</span>
+      <strong id="yesCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Não poderão ir</span>
+      <strong id="noCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Pendentes</span>
+      <strong id="pendingCount">0</strong>
+    </div>
+
+  </div>
+
+  <div class="panel">
+
+    <div class="filters">
 
       <input
-        id="tokenInput"
-        type="password"
-        placeholder="Digite seu token"
-        autocomplete="off"
-        required
+        id="searchInput"
+        type="search"
+        placeholder="Buscar convidado ou família..."
       >
 
-      <button id="loginButton" class="login-button" type="submit">
-        Entrar no painel
-      </button>
-
-    </form>
-
-    <div id="loginMessage" class="message"></div>
-
-  </section>
-
-  <!-- PAINEL -->
-  <section id="dashboard" class="hidden">
-
-    <div class="top-actions">
-
-      <div>
-        <h2>Confirmações dos convidados</h2>
-        <p class="sub">
-          Acompanhamento geral das famílias e de cada convidado.
-        </p>
-      </div>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="refreshBtn">Atualizar dados</button>
-        <button id="logoutBtn" type="button">Sair</button>
-      </div>
+      <select id="statusFilter">
+        <option value="all">Todas as respostas</option>
+        <option value="yes">Confirmados</option>
+        <option value="no">Não poderão ir</option>
+        <option value="pending">Pendentes</option>
+      </select>
 
     </div>
 
-    <div class="stats">
+    <div class="table-wrap">
 
-      <div class="stat">
-        <span>Total de convidados</span>
-        <strong id="totalCount">0</strong>
-      </div>
+      <table>
 
-      <div class="stat">
-        <span>Confirmados</span>
-        <strong id="yesCount">0</strong>
-      </div>
+        <thead>
+          <tr>
+            <th>Família</th>
+            <th>Convidado</th>
+            <th>Resposta</th>
+            <th>Data da resposta</th>
+          </tr>
+        </thead>
 
-      <div class="stat">
-        <span>Não poderão ir</span>
-        <strong id="noCount">0</strong>
-      </div>
+        <tbody id="guestRows">
+          <tr>
+            <td colspan="4" class="empty">
+              Carregando convidados...
+            </td>
+          </tr>
+        </tbody>
 
-      <div class="stat">
-        <span>Pendentes</span>
-        <strong id="pendingCount">0</strong>
-      </div>
-
-    </div>
-
-    <div class="panel">
-
-      <div class="filters">
-
-        <input
-          id="searchInput"
-          type="search"
-          placeholder="Buscar convidado ou família..."
-        >
-
-        <select id="statusFilter">
-          <option value="all">Todas as respostas</option>
-          <option value="yes">Confirmados</option>
-          <option value="no">Não poderão ir</option>
-          <option value="pending">Pendentes</option>
-        </select>
-
-      </div>
-
-      <div class="table-wrap">
-
-        <table>
-
-          <thead>
-            <tr>
-              <th>Família</th>
-              <th>Convidado</th>
-              <th>Resposta</th>
-              <th>Data da resposta</th>
-            </tr>
-          </thead>
-
-          <tbody id="guestRows">
-            <tr>
-              <td colspan="4" class="empty">
-                Carregando convidados...
-              </td>
-            </tr>
-          </tbody>
-
-        </table>
-
-      </div>
-
-      <p class="foot" id="resultCount"></p>
+      </table>
 
     </div>
 
-    <p class="foot">
-      Painel privado dos responsáveis. Não compartilhe o acesso.
-    </p>
+    <p class="foot" id="resultCount"></p>
 
-  </section>
+  </div>
+
+  <p class="foot">
+    Painel privado dos responsáveis. Não compartilhe o acesso.
+  </p>
+
+</section>
 
 </main>
 
@@ -457,6 +435,7 @@ tr:last-child td {
       cls: 'pending',
       key: 'pending'
     };
+
   }
 
   function formatDate(value) {
@@ -471,6 +450,7 @@ tr:last-child td {
       dateStyle: 'short',
       timeStyle: 'short'
     });
+
   }
 
   function showLoginMessage(message, type = 'error') {
@@ -564,9 +544,7 @@ tr:last-child td {
       { p_token: token }
     );
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     return Array.isArray(data) ? data : [];
 
@@ -594,11 +572,7 @@ tr:last-child td {
 
       const data = await fetchGuests(token);
 
-      /*
-        A função atual retorna os convidados quando o token
-        é válido e uma lista vazia quando ele é inválido.
-      */
-
+      // Nenhuma linha significa token inválido.
       if (data.length === 0) {
 
         showLoginMessage(
@@ -609,8 +583,11 @@ tr:last-child td {
 
       }
 
+      // A função pode retornar uma linha vazia
+      // quando o token é válido e não existem convidados.
       currentToken = token;
-      guests = data;
+
+      guests = data.filter(guest => guest.guest_id !== null);
 
       updateCounters();
       render();
@@ -649,9 +626,9 @@ tr:last-child td {
 
     try {
 
-      guests = await fetchGuests(currentToken);
+      const data = await fetchGuests(currentToken);
 
-      if (guests.length === 0) {
+      if (data.length === 0) {
 
         logout();
 
@@ -662,6 +639,8 @@ tr:last-child td {
         return;
 
       }
+
+      guests = data.filter(guest => guest.guest_id !== null);
 
       updateCounters();
       render();
@@ -704,8 +683,6 @@ tr:last-child td {
 
   }
 
-  // Inicialização do Supabase
-
   try {
 
     if (!window.supabase) {
@@ -729,16 +706,10 @@ tr:last-child td {
 
   }
 
-  // Eventos
-
   $('loginForm').addEventListener('submit', login);
-
   $('refreshBtn').addEventListener('click', refresh);
-
   $('logoutBtn').addEventListener('click', logout);
-
   $('searchInput').addEventListener('input', render);
-
   $('statusFilter').addEventListener('change', render);
 
 })();
