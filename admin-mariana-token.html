@@ -1,87 +1,546 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel privado | Mariana</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-:root{--green:#123d32;--gold:#d7b66d;--cream:#f7f4ec;--ink:#24332d;--muted:#718078}
-*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Arial,sans-serif}
-header{background:linear-gradient(120deg,#123d32,#0b2b24);color:white;padding:24px max(20px,calc((100% - 1100px)/2))}
-h1{font:normal 25px Georgia,serif;margin:0}header p{margin:6px 0 0;color:#e6d8b8;font-size:13px}
-main{width:min(1100px,calc(100% - 32px));margin:30px auto 55px}
-h2{font:normal 25px Georgia,serif;color:var(--green);margin:0 0 7px}
-.sub,.foot{color:var(--muted);font-size:13px;line-height:1.5}
-.panel,.stat{background:white;border:1px solid #e8e2d5;border-radius:14px;box-shadow:0 8px 28px #20382a0b}
-.panel{padding:22px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin:20px 0}
-.stat{padding:17px}.stat span{font-size:13px;color:var(--muted)}.stat strong{display:block;font-size:29px;color:var(--green);margin-top:8px}
-.filters{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin:18px 0}
-input,select{width:100%;padding:12px;border:1px solid #d8ded8;border-radius:9px;background:white;font-size:14px}
-button{border:0;border-radius:9px;padding:11px 16px;background:var(--green);color:white;font-weight:bold;cursor:pointer}
-.table-wrap{overflow-x:auto;border:1px solid #e8e2d5;border-radius:11px}table{width:100%;min-width:630px;border-collapse:collapse;background:white}
-th,td{text-align:left;padding:14px;border-bottom:1px solid #eeeae1;font-size:14px}th{background:#f8f6f0;color:#66736b;font-size:12px;text-transform:uppercase}
-tr:last-child td{border-bottom:0}.pill{display:inline-block;padding:6px 9px;border-radius:30px;font-size:12px;font-weight:bold}
-.yes{background:#e3f2e8;color:#27613c}.no{background:#f8e8e5;color:#9a4035}.pending{background:#f4efdf;color:#80672d}
-.empty{text-align:center;color:var(--muted);padding:25px}.error{background:#fff0ed;color:#933d32;padding:16px;border-radius:10px;line-height:1.5}
-@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:1fr}main{margin-top:20px}}
+:root{
+  --green:#123d32;
+  --gold:#d7b66d;
+  --cream:#f7f4ec;
+  --ink:#24332d;
+  --muted:#718078;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:Arial,sans-serif;
+}
+
+header{
+  background:linear-gradient(120deg,#123d32,#0b2b24);
+  color:white;
+  padding:24px max(20px,calc((100% - 1100px)/2));
+}
+
+h1{
+  font:normal 25px Georgia,serif;
+  margin:0;
+}
+
+header p{
+  margin:6px 0 0;
+  color:#e6d8b8;
+  font-size:13px;
+}
+
+main{
+  width:min(1100px,calc(100% - 32px));
+  margin:30px auto 55px;
+}
+
+h2{
+  font:normal 25px Georgia,serif;
+  color:var(--green);
+  margin:0 0 7px;
+}
+
+.sub,.foot{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+
+.panel,.stat{
+  background:white;
+  border:1px solid #e8e2d5;
+  border-radius:14px;
+  box-shadow:0 8px 28px #20382a0b;
+}
+
+.panel{padding:22px}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:13px;
+  margin:20px 0;
+}
+
+.stat{padding:17px}
+
+.stat span{
+  font-size:13px;
+  color:var(--muted);
+}
+
+.stat strong{
+  display:block;
+  font-size:29px;
+  color:var(--green);
+  margin-top:8px;
+}
+
+.filters{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:12px;
+  margin:18px 0;
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  border:1px solid #d8ded8;
+  border-radius:9px;
+  background:white;
+  font-size:14px;
+}
+
+button{
+  border:0;
+  border-radius:9px;
+  padding:11px 16px;
+  background:var(--green);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:wait;
+}
+
+.table-wrap{
+  overflow-x:auto;
+  border:1px solid #e8e2d5;
+  border-radius:11px;
+}
+
+table{
+  width:100%;
+  min-width:630px;
+  border-collapse:collapse;
+  background:white;
+}
+
+th,td{
+  text-align:left;
+  padding:14px;
+  border-bottom:1px solid #eeeae1;
+  font-size:14px;
+}
+
+th{
+  background:#f8f6f0;
+  color:#66736b;
+  font-size:12px;
+  text-transform:uppercase;
+}
+
+tr:last-child td{border-bottom:0}
+
+.pill{
+  display:inline-block;
+  padding:6px 9px;
+  border-radius:30px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.yes{
+  background:#e3f2e8;
+  color:#27613c;
+}
+
+.no{
+  background:#f8e8e5;
+  color:#9a4035;
+}
+
+.pending{
+  background:#f4efdf;
+  color:#80672d;
+}
+
+.empty{
+  text-align:center;
+  color:var(--muted);
+  padding:25px;
+}
+
+.error{
+  background:#fff0ed;
+  color:#933d32;
+  padding:16px;
+  border-radius:10px;
+  line-height:1.5;
+}
+
+/* CORREÇÃO: ESCONDE AS SEÇÕES INATIVAS */
+.hidden{
+  display:none !important;
+}
+
+@media(max-width:700px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .filters{grid-template-columns:1fr}
+  main{margin-top:20px}
+}
 </style>
 </head>
+
 <body>
-<header><h1>Mariana · 15 anos</h1><p>Painel privado de confirmações</p></header>
+
+<header>
+  <h1>Mariana · 15 anos</h1>
+  <p>Painel privado de confirmações</p>
+</header>
+
 <main>
-<section id="loading" class="panel"><h2>Verificando acesso...</h2><p class="sub">Aguarde enquanto validamos seu link privado.</p></section>
-<section id="denied" class="panel hidden"><h2>Acesso não autorizado</h2><p class="sub">Este link não possui um token válido. Use o endereço privado completo que foi fornecido a você.</p></section>
-<section id="dashboard" class="hidden">
-<div style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap">
-<div><h2>Confirmações dos convidados</h2><p class="sub">Acompanhamento geral das famílias e de cada convidado.</p></div>
-<button id="refreshBtn">Atualizar dados</button></div>
-<div class="stats">
-<div class="stat"><span>Total de convidados</span><strong id="totalCount">0</strong></div>
-<div class="stat"><span>Confirmados</span><strong id="yesCount">0</strong></div>
-<div class="stat"><span>Não poderão ir</span><strong id="noCount">0</strong></div>
-<div class="stat"><span>Pendentes</span><strong id="pendingCount">0</strong></div></div>
-<div class="panel">
-<div class="filters"><input id="searchInput" type="search" placeholder="Buscar convidado ou família...">
-<select id="statusFilter"><option value="all">Todas as respostas</option><option value="yes">Confirmados</option><option value="no">Não poderão ir</option><option value="pending">Pendentes</option></select></div>
-<div class="table-wrap"><table><thead><tr><th>Família</th><th>Convidado</th><th>Resposta</th><th>Data da resposta</th></tr></thead><tbody id="guestRows"><tr><td colspan="4" class="empty">Carregando...</td></tr></tbody></table></div>
-<p class="foot" id="resultCount"></p></div>
-<p class="foot">Não compartilhe este endereço: quem tiver o link poderá consultar as confirmações.</p>
+
+<section id="loading" class="panel">
+  <h2>Verificando acesso...</h2>
+  <p class="sub">Aguarde enquanto validamos seu link privado.</p>
 </section>
+
+<section id="denied" class="panel hidden">
+  <h2>Acesso não autorizado</h2>
+  <p class="sub">
+    Este link não possui um token válido.
+    Use o endereço privado completo que foi fornecido a você.
+  </p>
+</section>
+
+<section id="dashboard" class="hidden">
+
+  <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap">
+    <div>
+      <h2>Confirmações dos convidados</h2>
+      <p class="sub">
+        Acompanhamento geral das famílias e de cada convidado.
+      </p>
+    </div>
+
+    <button id="refreshBtn">Atualizar dados</button>
+  </div>
+
+  <div class="stats">
+
+    <div class="stat">
+      <span>Total de convidados</span>
+      <strong id="totalCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Confirmados</span>
+      <strong id="yesCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Não poderão ir</span>
+      <strong id="noCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Pendentes</span>
+      <strong id="pendingCount">0</strong>
+    </div>
+
+  </div>
+
+  <div class="panel">
+
+    <div class="filters">
+
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Buscar convidado ou família..."
+      >
+
+      <select id="statusFilter">
+        <option value="all">Todas as respostas</option>
+        <option value="yes">Confirmados</option>
+        <option value="no">Não poderão ir</option>
+        <option value="pending">Pendentes</option>
+      </select>
+
+    </div>
+
+    <div class="table-wrap">
+
+      <table>
+        <thead>
+          <tr>
+            <th>Família</th>
+            <th>Convidado</th>
+            <th>Resposta</th>
+            <th>Data da resposta</th>
+          </tr>
+        </thead>
+
+        <tbody id="guestRows">
+          <tr>
+            <td colspan="4" class="empty">
+              Carregando convidados...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <p class="foot" id="resultCount"></p>
+
+  </div>
+
+  <p class="foot">
+    Não compartilhe este endereço: quem tiver o link poderá consultar as confirmações.
+  </p>
+
+</section>
+
 </main>
+
 <script>
 (() => {
- const URL='https://ihtcoxssrngiqlnrmxbm.supabase.co';
- const KEY='sb_publishable_GPBkjN7rr38BnpDSUCAQwg_QoaSe90t';
- const client=window.supabase.createClient(URL,KEY);
- const token=new URLSearchParams(location.search).get('token');
- let guests=[];
- const $=id=>document.getElementById(id);
- const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const status=v=>v===true?{label:'Confirmado',cls:'yes',key:'yes'}:v===false?{label:'Não poderá ir',cls:'no',key:'no'}:{label:'Pendente',cls:'pending',key:'pending'};
- const date=v=>{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});};
- function render(){
-  const term=$('searchInput').value.trim().toLocaleLowerCase('pt-BR'),filter=$('statusFilter').value;
-  const rows=guests.filter(g=>(`${g.guest_name||''} ${g.family_name||''}`).toLocaleLowerCase('pt-BR').includes(term)&&(filter==='all'||status(g.response).key===filter));
-  $('guestRows').innerHTML=rows.length?rows.map(g=>{const s=status(g.response);return `<tr><td>${escapeHtml(g.family_name)}</td><td>${escapeHtml(g.guest_name)}</td><td><span class="pill ${s.cls}">${s.label}</span></td><td>${date(g.responded_at)}</td></tr>`}).join(''):'<tr><td colspan="4" class="empty">Nenhum convidado encontrado.</td></tr>';
-  $('resultCount').textContent=`Exibindo ${rows.length} de ${guests.length} convidados.`;
- }
- async function load(){
-  $('guestRows').innerHTML='<tr><td colspan="4" class="empty">Carregando convidados...</td></tr>';
-  const {data,error}=await client.rpc('get_admin_guests_by_token',{p_token:token});
-  if(error){$('guestRows').innerHTML=`<tr><td colspan="4" class="empty">Erro ao carregar: ${escapeHtml(error.message)}</td></tr>`;$('resultCount').textContent='Confira se o SQL de configuração foi executado corretamente.';return;}
-  guests=data||[];
-  $('totalCount').textContent=guests.length;
-  $('yesCount').textContent=guests.filter(g=>g.response===true).length;
-  $('noCount').textContent=guests.filter(g=>g.response===false).length;
-  $('pendingCount').textContent=guests.filter(g=>g.response===null).length;
-  render();
- }
- if(!token){$('loading').classList.add('hidden');$('denied').classList.remove('hidden');return;}
- load().then(()=>{$('loading').classList.add('hidden');$('dashboard').classList.remove('hidden');});
- $('refreshBtn').addEventListener('click',load);
- $('searchInput').addEventListener('input',render);
- $('statusFilter').addEventListener('change',render);
+
+  const URL = 'https://ihtcoxssrngiqlnrmxbm.supabase.co';
+
+  const KEY = 'sb_publishable_GPBkjN7rr38BnpDSUCAQwg_QoaSe90t';
+
+  const token = new URLSearchParams(location.search).get('token');
+
+  let guests = [];
+
+  const $ = id => document.getElementById(id);
+
+  const escapeHtml = s => String(s ?? '').replace(
+    /[&<>"']/g,
+    c => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[c])
+  );
+
+  const status = v => {
+    if(v === true){
+      return {
+        label:'Confirmado',
+        cls:'yes',
+        key:'yes'
+      };
+    }
+
+    if(v === false){
+      return {
+        label:'Não poderá ir',
+        cls:'no',
+        key:'no'
+      };
+    }
+
+    return {
+      label:'Pendente',
+      cls:'pending',
+      key:'pending'
+    };
+  };
+
+  const date = v => {
+    if(!v) return '—';
+
+    const d = new Date(v);
+
+    return Number.isNaN(d.getTime())
+      ? '—'
+      : d.toLocaleString('pt-BR',{
+          dateStyle:'short',
+          timeStyle:'short'
+        });
+  };
+
+  function render(){
+
+    const term = $('searchInput').value
+      .trim()
+      .toLocaleLowerCase('pt-BR');
+
+    const filter = $('statusFilter').value;
+
+    const rows = guests.filter(g => {
+
+      const name = `${g.guest_name || ''} ${g.family_name || ''}`
+        .toLocaleLowerCase('pt-BR');
+
+      return name.includes(term) &&
+        (filter === 'all' || status(g.response).key === filter);
+
+    });
+
+    $('guestRows').innerHTML = rows.length
+      ? rows.map(g => {
+
+          const s = status(g.response);
+
+          return `
+            <tr>
+              <td>${escapeHtml(g.family_name)}</td>
+              <td>${escapeHtml(g.guest_name)}</td>
+              <td>
+                <span class="pill ${s.cls}">
+                  ${s.label}
+                </span>
+              </td>
+              <td>${date(g.responded_at)}</td>
+            </tr>
+          `;
+
+        }).join('')
+      : `
+        <tr>
+          <td colspan="4" class="empty">
+            Nenhum convidado encontrado.
+          </td>
+        </tr>
+      `;
+
+    $('resultCount').textContent =
+      `Exibindo ${rows.length} de ${guests.length} convidados.`;
+
+  }
+
+  async function load(){
+
+    const refreshBtn = $('refreshBtn');
+
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = 'Atualizando...';
+
+    $('guestRows').innerHTML = `
+      <tr>
+        <td colspan="4" class="empty">
+          Carregando convidados...
+        </td>
+      </tr>
+    `;
+
+    try {
+
+      const { data, error } = await client.rpc(
+        'get_admin_guests_by_token',
+        { p_token: token }
+      );
+
+      if(error){
+        throw error;
+      }
+
+      guests = Array.isArray(data) ? data : [];
+
+      $('totalCount').textContent = guests.length;
+
+      $('yesCount').textContent =
+        guests.filter(g => g.response === true).length;
+
+      $('noCount').textContent =
+        guests.filter(g => g.response === false).length;
+
+      $('pendingCount').textContent =
+        guests.filter(g => g.response === null).length;
+
+      render();
+
+    } catch(error) {
+
+      console.error('Erro ao carregar convidados:', error);
+
+      $('guestRows').innerHTML = `
+        <tr>
+          <td colspan="4" class="empty">
+            Erro ao carregar os convidados:
+            ${escapeHtml(error.message || 'Erro desconhecido')}
+          </td>
+        </tr>
+      `;
+
+      $('resultCount').textContent =
+        'Verifique a conexão com o Supabase e tente novamente.';
+
+    } finally {
+
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = 'Atualizar dados';
+
+    }
+
+  }
+
+  if(!token){
+
+    $('loading').classList.add('hidden');
+    $('denied').classList.remove('hidden');
+
+    return;
+
+  }
+
+  let client;
+
+  try {
+
+    if(!window.supabase){
+      throw new Error('Biblioteca do Supabase não carregada.');
+    }
+
+    client = window.supabase.createClient(URL, KEY);
+
+    // MOSTRA O PAINEL E ESCONDE A TELA DE VERIFICAÇÃO
+    $('loading').classList.add('hidden');
+    $('dashboard').classList.remove('hidden');
+
+    load();
+
+  } catch(error) {
+
+    console.error('Erro ao iniciar o painel:', error);
+
+    $('loading').classList.add('hidden');
+    $('dashboard').classList.remove('hidden');
+
+    $('guestRows').innerHTML = `
+      <tr>
+        <td colspan="4" class="empty">
+          Erro ao iniciar o painel:
+          ${escapeHtml(error.message)}
+        </td>
+      </tr>
+    `;
+
+  }
+
+  $('refreshBtn').addEventListener('click', load);
+
+  $('searchInput').addEventListener('input', render);
+
+  $('statusFilter').addEventListener('change', render);
+
 })();
 </script>
-</body></html>
+
+</body>
+</html>
