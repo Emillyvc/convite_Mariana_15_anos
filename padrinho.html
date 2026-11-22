@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Um convite especial | Mariana</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: #082719;
+  color: #f5edda;
+  font-family: 'Cormorant Garamond', serif;
+  display: flex;
+  justify-content: center;
+  padding: 35px 18px;
+}
+
+.invitation {
+  width: 100%;
+  max-width: 650px;
+  min-height: 850px;
+  border: 1px solid #b99a58;
+  padding: 55px 35px;
+  text-align: center;
+  position: relative;
+  background:
+    radial-gradient(ellipse at top, #17432c 0%, #082719 65%);
+}
+
+.invitation::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid rgba(185,154,88,.35);
+  pointer-events: none;
+}
+
+.ornament {
+  color: #c5a45e;
+  font-size: 28px;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  font-size: 17px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: #d3bd88;
+}
+
+.name {
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(55px, 11vw, 82px);
+  color: #d7b66e;
+  font-weight: 400;
+  margin: 12px 0 24px;
+}
+
+.divider {
+  width: 110px;
+  height: 1px;
+  background: #b99a58;
+  margin: 25px auto;
+}
+
+.message {
+  font-size: 23px;
+  line-height: 1.5;
+  font-weight: 400;
+  margin: 18px auto;
+  max-width: 490px;
+}
+
+.highlight {
+  margin: 35px auto;
+  padding: 22px 12px;
+  border-top: 1px solid #b99a58;
+  border-bottom: 1px solid #b99a58;
+}
+
+.date {
+  font-size: clamp(32px, 7vw, 46px);
+  color: #d7b66e;
+  font-weight: 600;
+}
+
+.age {
+  font-family: 'Great Vibes', cursive;
+  font-size: 58px;
+  color: #d7b66e;
+}
+
+.closing {
+  font-family: 'Great Vibes', cursive;
+  font-size: 65px;
+  color: #d7b66e;
+  margin-top: 12px;
+}
+
+.location {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  line-height: 1.8;
+  letter-spacing: 1px;
+  color: #d8c9a8;
+  margin-top: 30px;
+}
+
+@media (max-width: 480px) {
+  .invitation {
+    padding: 45px 22px;
+  }
+
+  .message {
+    font-size: 20px;
+  }
+}
+</style>
+</head>
+
+<body>
+<main class="invitation">
+
+  <div class="ornament">✧</div>
+
+  <p class="eyebrow">Um convite especial</p>
+
+  <h1 class="name">Antônio Carlos</h1>
+
+  <div class="divider"></div>
+
+  <p class="message">
+    Existem pessoas que ocupam um lugar especial na nossa vida,
+    e tu és uma delas.
+  </p>
+
+  <p class="message">
+    Por isso, não poderia deixar de te fazer um convite
+    tão importante e especial.
+  </p>
+
+  <section class="highlight">
+    <p class="eyebrow">No dia</p>
+    <p class="date">19 de dezembro</p>
+    <p class="age">meus 15 anos ♡</p>
+  </section>
+
+  <p class="message">
+    E seria muito feliz em ter tua presença comigo nesse momento
+    tão marcante da minha vida.
+  </p>
+
+  <p class="message">
+    Quero compartilhar essa noite, minhas alegrias e esse capítulo
+    tão bonito com pessoas que fazem parte da minha história,
+    e tu, padrinho, és uma delas.
+  </p>
+
+  <div class="divider"></div>
+
+  <p class="message" style="color:#d7b66e;font-style:italic;">
+    Espero que tu possas estar comigo para tornar essa noite
+    ainda mais inesquecível.
+  </p>
+
+  <div class="ornament">♡</div>
+
+  <p class="eyebrow">Com carinho,</p>
+  <p class="closing">Mariana</p>
+
+  <div class="location">
+    19 DE DEZEMBRO DE 2026 · ÀS 21H<br>
+    SALÃO DE FESTAS ASSIS<br>
+    AV. ASSIS BRASIL, 6444<br>
+    PASSO D'AREIA · PORTO ALEGRE - RS
+  </div>
+
+</main>
+</body>
+</html>
